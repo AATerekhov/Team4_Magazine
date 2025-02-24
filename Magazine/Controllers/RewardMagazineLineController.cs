@@ -18,7 +18,7 @@ namespace MagazineHost.Controllers
     /// Magazine Lines
     /// </summary>
     [ApiController]
-    [Route("api/v1/[controller]")]
+    [Route("api/[controller]")]
     public class RewardMagazineLineController(IRewardMagazineLineService _service,
                                               IRewardMagazineService     _magazineService,
                                               IMapper                    _mapper,

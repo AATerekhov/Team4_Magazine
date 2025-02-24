@@ -18,6 +18,7 @@ namespace MagazineHost
     public class Startup
     {
         private IConfiguration Configuration { get; }
+        private const string Origin = "MagazineSpecificOrigins";
 
         public Startup(IConfiguration configuration)
         {
@@ -27,6 +28,7 @@ namespace MagazineHost
         public void ConfigureServices(IServiceCollection services)
         {
             var connectionString = Environment.GetEnvironmentVariable("magazine_connection_db_string");
+            var corsConfig = Configuration.GetSection("CorsSettings").Get<CorsSettings>();
 
             services.AddDbContext<EfDbContext>(optionsBuilder
                => optionsBuilder
@@ -35,6 +37,17 @@ namespace MagazineHost
             services.AddStackExchangeRedisCache(options =>
             {
                 options.Configuration = Configuration.GetConnectionString("Redis");
+            });
+
+            services.AddCors(options =>
+            {
+                options.AddPolicy(name: Origin,
+                                  build =>
+                                  {
+                                      build.WithOrigins(corsConfig.Origins)
+                                      .WithMethods(corsConfig.Methods)
+                                      .WithHeaders(corsConfig.Headers);
+                                  });
             });
 
             InstallAutomapper(services);

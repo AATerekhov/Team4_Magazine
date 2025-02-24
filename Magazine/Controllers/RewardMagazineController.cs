@@ -14,7 +14,7 @@ namespace MagazineHost.Controllers
     /// Magazine
     /// </summary>
     [ApiController]
-    [Route("api/v1/[controller]")]
+    [Route("api/[controller]")]
     public class RewardMagazineController(IRewardMagazineService _service,
                                           IMapper                _mapper,
                                           IDistributedCache     _distributedCache) : ControllerBase

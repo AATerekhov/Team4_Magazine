@@ -45,7 +45,7 @@ namespace MagazineHost.Controllers
 
             if (serialized is not null)
             {
-                var cachResult = JsonSerializer.Deserialize<IEnumerable<RewardMagazineResponse>>(serialized);
+                var cachResult = JsonSerializer.Deserialize<RewardMagazineResponse>(serialized);
 
                 if (cachResult is not null)
                 {

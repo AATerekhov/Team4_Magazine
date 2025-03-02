@@ -94,6 +94,8 @@ namespace MagazineHost
                 app.UseHsts();
             }
 
+            app.UseCors(Origin);
+
             app.UseOpenApi();
             app.UseSwaggerUi(x =>
             {

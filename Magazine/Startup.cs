@@ -12,6 +12,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Grpc.Core;
+using Grpc.Net;
+using Grpc.AspNetCore;
+using Google.Protobuf.WellKnownTypes;
+using GrpcDiaryClient;
 
 namespace MagazineHost
 {
@@ -75,6 +80,11 @@ namespace MagazineHost
                     cfg.ConfigureEndpoints(context);
                });
            });
+
+            services.AddGrpcClient<DiaryGrpcService.DiaryGrpcServiceClient>(o =>
+            {
+                o.Address = new Uri("http://localhost:5000"); 
+            });
 
             services.AddOpenApiDocument(options =>
             {

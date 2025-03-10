@@ -17,6 +17,7 @@ using Grpc.Net;
 using Grpc.AspNetCore;
 using Google.Protobuf.WellKnownTypes;
 using GrpcDiaryClient;
+using System;
 
 namespace MagazineHost
 {
@@ -81,9 +82,11 @@ namespace MagazineHost
                });
            });
 
+            var diaryGrpcUrl = Environment.GetEnvironmentVariable("DIARY_GRPC_URL");
+
             services.AddGrpcClient<DiaryGrpcService.DiaryGrpcServiceClient>(o =>
             {
-                o.Address = new Uri("http://localhost:5000"); 
+                o.Address = new Uri(diaryGrpcUrl); 
             });
 
             services.AddOpenApiDocument(options =>

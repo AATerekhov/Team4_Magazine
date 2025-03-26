@@ -18,6 +18,9 @@ using Grpc.AspNetCore;
 using Google.Protobuf.WellKnownTypes;
 using GrpcDiaryClient;
 using System;
+using Grpc.Net.Client;
+using System.Net;
+using System.Net.Security;
 
 namespace MagazineHost
 {
@@ -40,10 +43,10 @@ namespace MagazineHost
                => optionsBuilder
                    .UseNpgsql(connectionString));
 
-            services.AddStackExchangeRedisCache(options =>
-            {
-                options.Configuration = Configuration.GetConnectionString("Redis");
-            });
+            //services.AddStackExchangeRedisCache(options =>
+            //{
+            //    options.Configuration = Configuration.GetConnectionString("Redis");
+            //});
 
             services.AddCors(options =>
             {
@@ -59,34 +62,45 @@ namespace MagazineHost
             InstallAutomapper(services);
             services.AddServices(Configuration);
             services.AddControllers();
-
+            
             services.AddServices(Configuration);
             services.AddControllers();
             services.AddFluentValidationAutoValidation();
             services.AddValidators();
 
-           services.AddMassTransit(configurator =>
-           {
-               configurator.SetKebabCaseEndpointNameFormatter();
-               configurator.UsingRabbitMq((context, cfg) =>
-               {
-                   var rmqSettings = Configuration.Get<ApplicationSettings>()!.RmqSettings;
-                   cfg.Host(rmqSettings.Host,
-                               rmqSettings.VHost,
-                               h =>
-                               {
-                                   h.Username(rmqSettings.Login);
-                                   h.Password(rmqSettings.Password);
-                               });
-                    cfg.ConfigureEndpoints(context);
-               });
-           });
-
-            var diaryGrpcUrl = Environment.GetEnvironmentVariable("DIARY_GRPC_URL");
-
-            services.AddGrpcClient<DiaryGrpcService.DiaryGrpcServiceClient>(o =>
+            //services.AddMassTransit(configurator =>
+            //{
+            //    configurator.SetKebabCaseEndpointNameFormatter();
+            //    configurator.UsingRabbitMq((context, cfg) =>
+            //    {
+            //        var rmqSettings = Configuration.Get<ApplicationSettings>()!.RmqSettings;
+            //        cfg.Host(rmqSettings.Host,
+            //                    rmqSettings.VHost,
+            //                    h =>
+            //                    {
+            //                        h.Username(rmqSettings.Login);
+            //                        h.Password(rmqSettings.Password);
+            //                    });
+            //         cfg.ConfigureEndpoints(context);
+            //    });
+            //});
+             
+            services.AddGrpcClient<DiaryGrpcService.DiaryGrpcServiceClient>(options =>
             {
-                o.Address = new Uri(diaryGrpcUrl); 
+                options.Address = new Uri("http://diary:5001");
+            })
+            .ConfigurePrimaryHttpMessageHandler(() =>
+            {
+                var handler = new SocketsHttpHandler
+                {
+                    EnableMultipleHttp2Connections = true,
+                    SslOptions = new SslClientAuthenticationOptions
+                    {
+                        EnabledSslProtocols = System.Security.Authentication.SslProtocols.Tls12 | System.Security.Authentication.SslProtocols.Tls13,
+                    }
+                };
+
+                return handler;
             });
 
             services.AddOpenApiDocument(options =>
@@ -115,7 +129,7 @@ namespace MagazineHost
                 x.DocExpansion = "list";
             });
 
-            app.UseHttpsRedirection();
+           // app.UseHttpsRedirection();
 
             app.UseRouting();
 

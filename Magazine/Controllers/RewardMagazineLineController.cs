@@ -136,6 +136,9 @@ namespace MagazineHost.Controllers
 
             //await _busControl.Publish<MagazineLineMessage>(MagazineLineMessageMapper.MapInMessage(magazine, magazineLine), HttpContext.RequestAborted);
             await _diaryGrpcClient.CreateDiaryLineFromMagazineAsync(MagazineLineMessageMapper.MapInMessage(magazine, magazineLine));
+
+            await _distributedCache.RemoveAsync(KeyForCache.MagazineLinesByMagazineIdKey(magazine.Id));
+
             return Ok(_mapper.Map<RewardMagazineLineResponse>(magazineLine));
         }
 
@@ -155,6 +158,9 @@ namespace MagazineHost.Controllers
             //await _busControl.Publish<MagazineLineMessage>(MagazineLineMessageMapper.MapInMessage(magazine, magazineLine), HttpContext.RequestAborted);
             await _diaryGrpcClient.CreateDiaryLineFromMagazineAsync(MagazineLineMessageMapper.MapInMessage(magazine, magazineLine));
 
+            await _distributedCache.RemoveAsync(KeyForCache.MagazineLineKey(id));
+            await _distributedCache.RemoveAsync(KeyForCache.MagazineLinesByMagazineIdKey(magazine.Id));
+
             return Ok(_mapper.Map<RewardMagazineLineResponse>(magazineLine));
         }
 
@@ -167,6 +173,7 @@ namespace MagazineHost.Controllers
         public async Task<IActionResult> DeleteMagazineLine(Guid id)
         {
             await _service.DeleteAsync(id, HttpContext.RequestAborted);
+            await _distributedCache.RemoveAsync(KeyForCache.MagazineLineKey(id));
             return Ok($"Строка журнала с id {id} удален");
         }
     }

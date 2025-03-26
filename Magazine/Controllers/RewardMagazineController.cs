@@ -89,8 +89,8 @@ namespace MagazineHost.Controllers
         [HttpPost("CreateMagazine")]
         public async Task<ActionResult<RewardMagazineResponse>> CreateMagazineAsync(CreateRewardMagazineRequest request)
         {
-            var diary = await _service.CreateAsync(_mapper.Map<CreateRewardMagazineDto>(request), HttpContext.RequestAborted);
-            return Ok(_mapper.Map<RewardMagazineResponse>(diary));
+            var magazine = await _service.CreateAsync(_mapper.Map<CreateRewardMagazineDto>(request), HttpContext.RequestAborted);
+            return Ok(_mapper.Map<RewardMagazineResponse>(magazine));
         }
 
         /// <summary>
@@ -103,9 +103,10 @@ namespace MagazineHost.Controllers
         [HttpPut("UpdateMagazine/{id}")]
         public async Task<ActionResult<RewardMagazineResponse>> EditMagazineAsync(Guid id, EditRewardMagazineRequest request)
         {
-            var diary = await _service.UpdateAsync(id, _mapper.Map<EditRewardMagazineRequest, EditRewardMagazineDto>(request), HttpContext.RequestAborted);
-
-            return Ok(_mapper.Map<RewardMagazineResponse>(diary));
+            var magazine = await _service.UpdateAsync(id, _mapper.Map<EditRewardMagazineRequest, EditRewardMagazineDto>(request), HttpContext.RequestAborted);
+            await _distributedCache.RemoveAsync(KeyForCache.MagazineKey(id));
+            await _distributedCache.RemoveAsync(KeyForCache.MagazinesByMagazineOwnerIdKey(magazine.MagazineOwnerId));
+            return Ok(_mapper.Map<RewardMagazineResponse>(magazine));
         }
 
         /// <summary>
@@ -117,6 +118,7 @@ namespace MagazineHost.Controllers
         public async Task<IActionResult> DeleteMagazine(Guid id)
         {
             await _service.DeleteAsync(id, HttpContext.RequestAborted);
+            await _distributedCache.RemoveAsync(KeyForCache.MagazineKey(id));
             return Ok($"Журнал наград с id {id} удален");
         }
 
